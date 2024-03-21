@@ -1,10 +1,4 @@
 import logging
-import os
-
-# import telebot
-
-# TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
-# CHAT_ID = os.getenv("CHAT_ID")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,52 +10,43 @@ my_formatter = logging.Formatter(
     "%(asctime)s %(filename)s - line %(lineno)d => %(levelname)s > %(message)s "
 )
 
-logger = logging.getLogger()
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-console.setFormatter(my_formatter)
+# implement filter
+class MyFilter(logging.Filter):
+    def filter(self, record):
+        return not (record.msg.endswith("NOLOG"))
 
-logger.addHandler(console)
-
-"""
-class MyGreatHandler(logging.Handler):
-    def __init__(self, my_filename: str):
+# implement custom handler
+class MyCustomHandler(logging.Handler):
+    def __init__(self, filename: str):
         super().__init__()
-        self.my_filename = my_filename
+        self.file = open(filename, 'a')
 
     def emit(self, record: logging.LogRecord):
-        bot = telebot.TeleBot(self.api_key)
+        self.file.write(self.format(record).swapcase())
 
-        bot.send_message(
-            self.chat_id,
-            self.format(record)
-        )
+    def __del__(self):
+        self.file.close()
 
+logger = logging.getLogger()
 
-class TestFilter(logging.Filter):
-
-    def filter(self, record):
-        # Returns False if battle finished with a draw
-        return not (record.msg.lower().startswith('test'))
-
-
-root_logger = logging.getLogger()
+# default handlers: console, file
 
 console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-console.setFormatter(main_formatter)
+console.setLevel(logging.INFO)
+console.setFormatter(my_formatter)
 
-file = logging.FileHandler(filename="important_logs.txt")
-file.setLevel(logging.ERROR)
-file.setFormatter(main_formatter)
+my_file = logging.FileHandler(filename="additional_log.log")
+my_file.setLevel(logging.ERROR)
+my_file.setFormatter(my_formatter)
 
-telegram = TelegramBotHandler(TG_BOT_TOKEN, CHAT_ID)
-telegram.setLevel(logging.ERROR)
-telegram.setFormatter(main_formatter)
+my_special_file = MyCustomHandler("special.log")
+my_special_file.setLevel(logging.ERROR)
+my_special_file.setFormatter(my_formatter)
 
-root_logger.addHandler(console)
-root_logger.addHandler(file)
-root_logger.addHandler(telegram)
+logger.addHandler(console)
+logger.addHandler(my_file)
+logger.addHandler(my_special_file)
 
-telegram.addFilter(TestFilter())
-"""
+my_file.addFilter(MyFilter())  # filter NOLOG suffixes
+my_special_file.addFilter(MyFilter())  # filter NOLOG suffixes
+
