@@ -1,8 +1,9 @@
 # importing my logging infrastructure here as a package
-from mylog import logging
+from mylog import logger
+import module1, module2  # just to show that logging works in other modules
 
 
 # some sample logging
-logging.warning("My stupid warning")
-logging.error("My stupid error")
-logging.info("Filter that NOLOG") # that will be filtered in some handlers, only root and console will show it
+logger.warning("My stupid warning")
+logger.error("My stupid error")
+logger.info("Filter that NOLOG") # that will be filtered in some handlers, only root and console will show it

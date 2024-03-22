@@ -1,2 +1,2 @@
-import logging
 import mylog.mylog
+from mylog.mylog import logger
